@@ -9,7 +9,7 @@ LEFT OFF: Updated the db with foreign keys in the TagAlways... table. Test to ma
 	= Start working with editing relationsips
 = Figure out how to remove NotesAppContext from my database service and user a dbContext or some interface somehow
 = I need validate the incoming models before calling my services
-
+ 
 
 
 
