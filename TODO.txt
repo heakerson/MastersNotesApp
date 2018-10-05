@@ -1,0 +1,31 @@
+﻿
+LEFT OFF: Updated the db with foreign keys in the TagAlways... table. Test to make sure everything still works. I just created a better mapping method in the database service. 
+	Mapping to an existing object rather than a new one. I also created a method that gets the primary key of an entity. Update all of the methods in the database service to 
+	use these and return better objects
+
+= Add basic actions to all my controllers
+= Populate the relationships tables
+	= Create basic "full" query methods in my services for each type and test all the gets
+	= Start working with editing relationsips
+= Figure out how to remove NotesAppContext from my database service and user a dbContext or some interface somehow
+= I need validate the incoming models before calling my services
+
+
+
+
+
+
+===========================================================================================
+===========================================================================================
+
+-SCAFFOLDING
+	-o Name of folder for model objects
+	-c Name context object
+
+	dotnet ef dbcontext scaffold "Server=HEATHERA-PC3;Database=NotesApp;Trusted_Connection=True;MultipleActiveResultSets=true" Microsoft.EntityFrameworkCore.SqlServer -o NotesAppEntities -c "NotesAppContext"
+
+	- !Comment out the crazy code in the context!
+
+-RE-SCAFFOLD (just adding the -f to override already existing files)
+
+	dotnet ef dbcontext scaffold "Server=HEATHERA-PC3;Database=NotesApp;Trusted_Connection=True;MultipleActiveResultSets=true" Microsoft.EntityFrameworkCore.SqlServer -o NotesAppEntities -c "NotesAppContext" -f
