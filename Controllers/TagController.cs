@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Linq;
+using Nerdable.DbHelper.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NotesApp.Api.NotesAppEntities;
-using NotesApp.Api.Services.DatabaseServices;
-using NotesApp.Api.Services.Response;
-using NotesApp.Api.Services.TagService;
-using NotesApp.Api.Services.TagService.Models;
+using Nerdable.NotesApi.NotesAppEntities;
+using Nerdable.NotesApi.Services.TagService;
+using Nerdable.NotesApi.Services.TagService.Models;
 
-namespace NotesApp.Api.Controllers
+namespace Nerdable.NotesApi.Controllers
 {
     [ApiController]
     public class TagController : ApiBaseController
     {
         private readonly ITagService _tagService;
-        private readonly IDatabaseService _databaseService;
+        private readonly IDbHelper _databaseService;
         private readonly NotesAppContext _context;
 
-        public TagController(ITagService tagService, IDatabaseService databaseService, NotesAppContext context)
+        public TagController(ITagService tagService, IDbHelper databaseService, NotesAppContext context)
         {
             _tagService = tagService;
             _databaseService = databaseService;
@@ -34,6 +28,7 @@ namespace NotesApp.Api.Controllers
 
             return ApiResult(response);
         }
+
 
         [HttpPost("[Controller]/Update")]
         public IActionResult UpdateTag([FromBody]TagUpdateModel model)
@@ -63,10 +58,10 @@ namespace NotesApp.Api.Controllers
         }
 
 
-        [HttpDelete("[Controller]/SoftDelete/{tagId}")]
+        [HttpPost("[Controller]/SoftDelete/{tagId}")]
         public IActionResult SoftDeleteTag(int tagId)
         {
-            var response = _databaseService.UpdateObject<Tags>(tagId, _tagService.SoftDeleteUpdate);
+            var response = _databaseService.UpdateObject<Tags>(tagId, _tagService.UpdateSoftDelete);
 
             return ApiResult(response);
         }

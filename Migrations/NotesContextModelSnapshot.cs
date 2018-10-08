@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NotesApp.Api.NotesAppEntities;
+using Nerdable.NotesApi.NotesAppEntities;
 
-namespace NotesApp.Api.Migrations
+namespace Nerdable.NotesApi.Migrations
 {
     [DbContext(typeof(NotesAppContext))]
     partial class NotesContextModelSnapshot : ModelSnapshot

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace NotesApp.Api
+namespace Nerdable.NotesApi
 {
     public class Program
     {

@@ -1,10 +1,10 @@
-﻿using NotesApp.Api.Services.UserService.Models;
+﻿using Nerdable.NotesApi.Services.UserService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.TagService.Models
+namespace Nerdable.NotesApi.Services.TagService.Models
 {
     public class TagDetail : TagUpdateModel
     {

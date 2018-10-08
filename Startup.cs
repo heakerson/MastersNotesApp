@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using Nerdable.DbHelper.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NotesApp.Api.NotesAppEntities;
-using NotesApp.Api.Services.DatabaseServices;
-using NotesApp.Api.Services.NoteService;
-using NotesApp.Api.Services.TagService;
-using NotesApp.Api.Services.UserService;
+using Nerdable.NotesApi.NotesAppEntities;
+using Nerdable.NotesApi.Services.NoteService;
+using Nerdable.NotesApi.Services.RelationshipService;
+using Nerdable.NotesApi.Services.TagService;
+using Nerdable.NotesApi.Services.UserService;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace NotesApp.Api
+namespace Nerdable.NotesApi
 {
     public class Startup
     {
@@ -27,8 +24,8 @@ namespace NotesApp.Api
             {
                 c.SwaggerDoc("v1", new Info { Title = "EF Core Notes API", Version = "v1" });
             });
-
-            services.AddAutoMapper();
+            
+            //services.AddAutoMapper();
 
             var connection = "Server=HEATHERA-PC3;Database=NotesApp;Trusted_Connection=True;MultipleActiveResultSets=true";
 
@@ -36,10 +33,15 @@ namespace NotesApp.Api
                 options.UseSqlServer(connection)
             );
 
+            //services.AddScoped<DbContext, NotesAppContext>();
+
             services.AddScoped<INoteService, NoteService>();
             services.AddScoped<ITagService, TagService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IDatabaseService, DatabaseService>();
+            services.AddScoped<IRelationshipService, RelationshipService>();
+
+            services.AddDbHelper<NotesAppContext>();
+            //services.AddScoped<IDatabaseService, DatabaseService>();
 
             services.AddMvc();
         }

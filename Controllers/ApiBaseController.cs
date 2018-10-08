@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NotesApp.Api.Services.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Nerdable.DbHelper.Models.Response;
+using Microsoft.AspNetCore.Mvc;
 
-namespace NotesApp.Api.Controllers
+namespace Nerdable.NotesApi.Controllers
 {
     [Route("api/")]
     public class ApiBaseController : ControllerBase
@@ -15,6 +11,7 @@ namespace NotesApp.Api.Controllers
             switch (response.ReturnCode)
             {
                 case ReturnCode.Success:
+                case ReturnCode.PartialSuccess:
                     return Ok(response);
                 case ReturnCode.DoesNotExist:
                 case ReturnCode.NoEntitiesMatchQuery:

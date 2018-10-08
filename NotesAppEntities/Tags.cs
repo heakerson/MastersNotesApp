@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NotesApp.Api.NotesAppEntities
+namespace Nerdable.NotesApi.NotesAppEntities
 {
     public partial class Tags
     {

@@ -1,14 +1,15 @@
 ﻿using Nerdable.NotesApi.Services.TagService.Models;
-using Nerdable.NotesApi.Services.UserService.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nerdable.NotesApi.Services.NoteService.Models
 {
-    public class NoteDetail : NoteBase
+    public class NoteUpdateModel : NoteBase
     {
         public int NoteId { get; set; }
-        public UserDetail CreatedByUser { get; set; }
-        public ICollection<TagSummary> Tags { get; set; }
+        public int CreatedByUserId { get; set; }
+        public List<TagSummary> Tags { get; set; }
     }
 }

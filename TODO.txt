@@ -1,13 +1,21 @@
 ﻿
-LEFT OFF: Updated the db with foreign keys in the TagAlways... table. Test to make sure everything still works. I just created a better mapping method in the database service. 
-	Mapping to an existing object rather than a new one. I also created a method that gets the primary key of an entity. Update all of the methods in the database service to 
-	use these and return better objects
 
-= Add basic actions to all my controllers
+LEFT OFF:
+===========================================================
+
+
+
+
+
+TODO:
+============================================================
+= Test the note update method (including switching up multiple tags, incorrect tag ids, etc)
+= Test the add tag action
+= Test the remove tag action
+= Add actions to add update the TagAlwaysIncludeRelationhip and viewing them
 = Populate the relationships tables
 	= Create basic "full" query methods in my services for each type and test all the gets
 	= Start working with editing relationsips
-= Figure out how to remove NotesAppContext from my database service and user a dbContext or some interface somehow
 = I need validate the incoming models before calling my services 
  
 

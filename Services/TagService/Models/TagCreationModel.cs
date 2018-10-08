@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.TagService.Models
+namespace Nerdable.NotesApi.Services.TagService.Models
 {
     public class TagCreationModel
     {

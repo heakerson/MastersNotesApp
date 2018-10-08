@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.TagService.Models
+namespace Nerdable.NotesApi.Services.TagService.Models
 {
     public class TagSummary
     {
         public int TagId { get; set; }
-        public int Title { get; set; }
+        public string Title { get; set; }
     }
 }

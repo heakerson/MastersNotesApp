@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.UserService.Models
+namespace Nerdable.NotesApi.Services.UserService.Models
 {
     public class UserUpdateModel : UserBaseModel
     {

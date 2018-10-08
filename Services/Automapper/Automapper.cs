@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
-using NotesApp.Api.NotesAppEntities;
-using NotesApp.Api.Services.DatabaseServices;
-using NotesApp.Api.Services.NoteService.Models;
-using NotesApp.Api.Services.TagService.Models;
-using NotesApp.Api.Services.UserService.Models;
+using Nerdable.NotesApi.NotesAppEntities;
+using Nerdable.NotesApi.Services.NoteService.Models;
+using Nerdable.NotesApi.Services.TagService.Models;
+using Nerdable.NotesApi.Services.UserService.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.Automapper
+namespace Nerdable.NotesApi.Services.Automapper
 {
     public class AutomapperProfile : Profile
     {
@@ -35,8 +35,17 @@ namespace NotesApp.Api.Services.Automapper
 
 
 
-            CreateMap<Notes, NoteDetail>();
+            CreateMap<Notes, NoteDetail>()
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(entity => 
+                    entity.TagNoteRelationship
+                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title})));
             CreateMap<NoteDetail, Notes>();
+
+            CreateMap<NoteUpdateModel, Notes>();
+            CreateMap<Notes, NoteUpdateModel>();
+
+            CreateMap<NoteCreationModel, Notes>();
+            CreateMap<Notes, NoteCreationModel>();
 
 
             CreateMap<Tags, TagSummary>();

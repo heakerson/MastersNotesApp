@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace NotesApp.Api.NotesAppEntities
+namespace Nerdable.NotesApi.NotesAppEntities
 {
     public partial class NotesAppContext : DbContext
     {

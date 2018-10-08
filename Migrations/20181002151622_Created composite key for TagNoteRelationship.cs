@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace NotesApp.Api.Migrations
+namespace Nerdable.NotesApi.Migrations
 {
     public partial class CreatedcompositekeyforTagNoteRelationship : Migration
     {

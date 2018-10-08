@@ -1,21 +1,13 @@
-﻿using NotesApp.Api.NotesAppEntities;
-using NotesApp.Api.Services.Response;
-using NotesApp.Api.Services.TagService.Models;
-using System;
-using System.Collections.Generic;
+﻿using Nerdable.DbHelper.Models.Response;
+using Nerdable.NotesApi.NotesAppEntities;
+using Nerdable.NotesApi.Services.TagService.Models;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace NotesApp.Api.Services.TagService
+namespace Nerdable.NotesApi.Services.TagService
 {
     public interface ITagService
     {
-        Response<TagCreationModel> CreateTag(TagCreationModel tag);
-        Response<TagDetail> UpdateTag(TagDetail tag);
-
-        TagDetail GetTag(int tagId);
-
         IQueryable<Tags> GetTagQuery(int tagId);
-        Response<Tags> SoftDeleteUpdate(Tags entity);
+        Response<Tags> UpdateSoftDelete(Tags entity);
     }
 }
