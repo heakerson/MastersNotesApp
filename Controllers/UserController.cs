@@ -42,7 +42,7 @@ namespace Nerdable.NotesApi.Controllers
         public IActionResult GetUser(int userId)
         {
             var query = _userService.GetUserQuery(userId);
-            var userResponse = _dbHelper.GetObject<Users,UserDetail>(userId);
+            var userResponse = _dbHelper.GetObjectByQuery<Users,UserDetail>(query);
 
             return ApiResult(userResponse);
         }

@@ -24,6 +24,8 @@ namespace Nerdable.NotesApi.Services.UserService
         public IQueryable<Users> GetUserQuery(int userId)
         {
             return _dbContext.Users
+                .Include(u => u.Tags)
+                .Include(u => u.Notes)
                 .Where(u => u.UserId == userId);
         }
         public Response<Users> UpdateSoftDelete(Users entity)

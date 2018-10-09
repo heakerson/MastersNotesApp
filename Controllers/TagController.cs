@@ -43,7 +43,7 @@ namespace Nerdable.NotesApi.Controllers
         public IActionResult GetTag(int tagId)
         {
             IQueryable<Tags> query = _tagService.GetTagQuery(tagId);
-            var response = _databaseService.GetObject<Tags, TagDetail>(query);
+            var response = _databaseService.GetObjectByQuery<Tags, TagDetail>(query);
 
             return ApiResult(response);
         }

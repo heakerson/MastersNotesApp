@@ -10,6 +10,7 @@ using Nerdable.DbHelper.Services;
 using Nerdable.NotesApi.NotesAppEntities;
 using Nerdable.NotesApi.Services.NoteService;
 using Nerdable.NotesApi.Services.NoteService.Models;
+using Nerdable.NotesApi.Services.RelationshipService;
 using Nerdable.NotesApi.Services.TagService.Models;
 
 namespace Nerdable.NotesApi.Controllers
@@ -20,12 +21,14 @@ namespace Nerdable.NotesApi.Controllers
         private readonly IDbHelper _dbHelper;
         private readonly IMapper _mapper;
         private readonly INoteService _noteService;
+        private readonly IRelationshipService _relationshipService;
 
-        public NotesController(IDbHelper dbHelper, IMapper mapper, INoteService noteService)
+        public NotesController(IDbHelper dbHelper, IMapper mapper, INoteService noteService, IRelationshipService relationshipService)
         {
             _dbHelper = dbHelper;
             _mapper = mapper;
             _noteService = noteService;
+            _relationshipService = relationshipService;
         }
 
         [HttpPost("[controller]/Create")]
@@ -80,6 +83,10 @@ namespace Nerdable.NotesApi.Controllers
             {
                 var updateTagsResponse = _noteService.UpdateTagRelationships(model.NoteId, model.Tags);
 
+                //Workaround for entity update bug. Explicitly setting the tag relationships so the response object is correct
+                var getUpdatedTagsResponse = _dbHelper.GetObjectsByQuery<TagNoteRelationship,TagSummary>(_noteService.GetAllTagNoteRelationshipsQuery(model.NoteId));
+                updateTagsResponse.Data.Tags = getUpdatedTagsResponse.Data;
+
                 return ApiResult(updateTagsResponse);
             }
             else
@@ -91,14 +98,14 @@ namespace Nerdable.NotesApi.Controllers
         [HttpPost("[controller]/{noteId}/RemoveTag/{tagId}")]
         public IActionResult RemoveTag(int noteId, int tagId)
         {
-            var query = _noteService.GetTagNoteRelationship(noteId,tagId);
+            var query = _noteService.GetTagNoteRelationshipQuery(noteId,tagId);
 
             var removeResponse = _dbHelper.RemoveEntitiesByQuery(query);
 
             if (removeResponse.Success)
             {
                 var noteQuery = _noteService.GetNoteQuery(noteId);
-                return ApiResult(_dbHelper.GetObject<Notes, NoteDetail>(noteQuery));
+                return ApiResult(_dbHelper.GetObjectByQuery<Notes, NoteDetail>(noteQuery));
             }
 
             return ApiResult(removeResponse);
@@ -107,12 +114,22 @@ namespace Nerdable.NotesApi.Controllers
         [HttpPost("[controller]/{noteId}/AddTag/{tagId}")]
         public IActionResult AddTag(int noteId, int tagId)
         {
-            var createResponse = _dbHelper.AddObject(new TagNoteRelationship { NoteId = noteId, TagId = tagId});
+            var createResponse = _relationshipService.CreateNewTagNoteRelationship(noteId, tagId);
 
             if (createResponse.Success)
             {
-                var noteQuery = _noteService.GetNoteQuery(noteId);
-                return ApiResult(_dbHelper.GetObject<Notes, NoteDetail>(noteQuery));
+                var addResponse = _dbHelper.AddObject(createResponse.Data);
+
+                if (addResponse.Success)
+                {
+                    var noteQuery = _noteService.GetNoteQuery(noteId);
+                    return ApiResult(_dbHelper.GetObjectByQuery<Notes, NoteDetail>(noteQuery));
+                }
+                else
+                {
+                    return ApiResult(addResponse);
+                }
+
             }
 
             return ApiResult(createResponse);
@@ -122,7 +139,7 @@ namespace Nerdable.NotesApi.Controllers
         public IActionResult GetNote(int id)
         {
             var query = _noteService.GetNoteQuery(id);
-            return ApiResult(_dbHelper.GetObject<Notes,NoteDetail>(query));
+            return ApiResult(_dbHelper.GetObjectByQuery<Notes,NoteDetail>(query));
         }
 
         [HttpDelete("[controller]/HardDelete/{noteId}")]

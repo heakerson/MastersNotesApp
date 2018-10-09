@@ -11,13 +11,15 @@ namespace Nerdable.NotesApi.Services.NoteService
 {
     public interface INoteService
     {
-        Response<NoteDetail> AddTagNoteRelationships(int noteId, List<TagSummary> tags);
-        Response<NoteDetail> RemoveAllTagNoteRelationShips(int noteId);
+        Response<List<TagNoteRelationship>> AddTagNoteRelationships(int noteId, List<TagSummary> tags);
+        Response<TagNoteRelationship> AddTagNoteRelationship(int noteId, int tagId);
+        Response<NoteDetail> RemoveTagNoteRelationship(int noteId, int tagId);
+        Response<NoteDetail> RemoveAllTagNoteRelationships(int noteId);
         Response<NoteDetail> UpdateTagRelationships(int noteId, List<TagSummary> Tags);
 
         IQueryable<Notes> GetNoteQuery(int noteId);
-        IQueryable<TagNoteRelationship> GetAllTagNoteRelationships(int noteId);
-        IQueryable<TagNoteRelationship> GetTagNoteRelationship(int noteId, int tagid);
+        IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int noteId);
+        IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid);
 
         Response<Notes> UpdateSoftDelete(Notes entity);
     }

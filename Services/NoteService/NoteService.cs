@@ -25,12 +25,30 @@ namespace Nerdable.NotesApi.Services.NoteService
             _relationshipService = relationshipService;
         }
 
-        public Response<NoteDetail> RemoveAllTagNoteRelationShips(int noteId)
+        public Response<NoteDetail> RemoveTagNoteRelationship(int noteId, int tagId)
         {
-            var query = GetAllTagNoteRelationships(noteId);
+            var tagNotQuery = GetTagNoteRelationshipQuery(noteId, tagId);
+
+            var removeResponse = _dbHelper.RemoveEntitiesByQuery(tagNotQuery);
+
+            var noteResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
+
+            if (removeResponse.Success)
+            {
+                return Response<NoteDetail>.BuildResponse(noteResponse.Data);
+            }
+            else
+            {
+                return Response<NoteDetail>.BuildResponse(noteResponse.Data, false, removeResponse.ReturnCode, removeResponse.ReturnMessage);
+            }
+        }
+
+        public Response<NoteDetail> RemoveAllTagNoteRelationships(int noteId)
+        {
+            var query = GetAllTagNoteRelationshipsQuery(noteId);
 
             var removeResponse = _dbHelper.RemoveEntitiesByQuery(query);
-            var getDetailResponse = _dbHelper.GetObject<Notes, NoteDetail>(noteId);
+            var getDetailResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
 
             if (removeResponse.Success)
             {
@@ -42,60 +60,88 @@ namespace Nerdable.NotesApi.Services.NoteService
             }
         }
 
-        public Response<NoteDetail> AddTagNoteRelationships(int noteId, List<TagSummary> tags)
+        public Response<TagNoteRelationship> AddTagNoteRelationship(int noteId, int tagId)
         {
+            var relationshipResponse = _relationshipService.CreateNewTagNoteRelationship(noteId, tagId);
+
+            if (relationshipResponse.Success)
+            {
+                var tagNoteResponse = _dbHelper.AddObject(relationshipResponse.Data);
+
+                return tagNoteResponse;
+            }
+            else
+            {
+                return relationshipResponse;
+            }
+        }
+
+        public Response<List<TagNoteRelationship>> AddTagNoteRelationships(int noteId, List<TagSummary> tags)
+        {
+            List<TagNoteRelationship> responseData = new List<TagNoteRelationship>();
+
             bool errorOccurred = false;
             bool successOccurred = false;
             string message = "";
+
+
 
             if (tags.Any())
             {
                 foreach (TagSummary tag in tags)
                 {
-                    var tagNoteResponse = _dbHelper.AddObject(new TagNoteRelationship { TagId = tag.TagId, NoteId = noteId });
+                    var addNewRelationshipResponse = AddTagNoteRelationship(noteId, tag.TagId);
 
-                    if (!tagNoteResponse.Success)
+                    if (addNewRelationshipResponse.Success)
                     {
-                        errorOccurred = true;
-                        message += $"Failed to create relationship for tag \"{tag.Title}\" with id {tag.TagId} | ";
+                        successOccurred = true;
+                        responseData.Add(addNewRelationshipResponse.Data);
                     }
                     else
                     {
-                        successOccurred = true;
+                        if (errorOccurred)
+                        {
+                            message += $"[ NoteId: {noteId} and TagId: {tag.TagId} Error Message: {addNewRelationshipResponse.ReturnMessage} ] ";
+                        }
+                        else
+                        {
+                            message += $"The following tagNoteRelationships were not added: [ NoteId: {noteId} and TagId: {tag.TagId} Error Message: {addNewRelationshipResponse.ReturnMessage} ] ";
+                            errorOccurred = true;
+                        }
                     }
                 }
 
 
-                var returnDataResponse = _dbHelper.GetObject<Notes, NoteDetail>(GetNoteQuery(noteId));
-
                 if (successOccurred && errorOccurred)
                 {
-                    return Response<NoteDetail>.BuildResponse(returnDataResponse.Data, true, ReturnCode.PartialSuccess, $"PartialSuccess: {message}");
+                    return Response<List<TagNoteRelationship>>.BuildResponse(responseData, true, ReturnCode.PartialSuccess, $"PARTIAL SUCCESS: {message}");
                 }
                 else if (!successOccurred && errorOccurred)
                 {
-                    return Response<NoteDetail>.BuildResponse(returnDataResponse.Data, true, ReturnCode.DatabaseAddFailure, $"No new TagNoteRelationships were created");
+                    return Response<List<TagNoteRelationship>>.BuildResponse(responseData, true, ReturnCode.DatabaseAddFailure, $"No new TagNoteRelationships were created: {message}");
                 }
                 else
                 {
-                    return returnDataResponse;
+                    return Response<List<TagNoteRelationship>>.BuildResponse(responseData);
                 }
             }
             else
             {
-                return Response<NoteDetail>.BuildResponse(null, false, ReturnCode.InvalidInput, "No new relationships were passed in to add");
+                return Response<List<TagNoteRelationship>>.BuildResponse(responseData, false, ReturnCode.InvalidInput, "No new tag note relationships were passed in to add");
             }
         }
 
         public Response<NoteDetail> UpdateTagRelationships(int noteId, List<TagSummary> Tags)
         {
-            var removeTagsResponse = RemoveAllTagNoteRelationShips(noteId);
+            var removeTagsResponse = RemoveAllTagNoteRelationships(noteId);
 
             if (removeTagsResponse.Success)
             {
                 var addTagsResponse = AddTagNoteRelationships(noteId, Tags);
 
-                return addTagsResponse;
+                var detailResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
+
+                return Response<NoteDetail>.BuildResponse(detailResponse.Data, addTagsResponse.Success, addTagsResponse.ReturnCode, addTagsResponse.ReturnMessage);
             }
             else
             {
@@ -112,7 +158,7 @@ namespace Nerdable.NotesApi.Services.NoteService
                 .Where(note => note.NoteId == noteId);
         }
 
-        public IQueryable<TagNoteRelationship> GetAllTagNoteRelationships(int noteId)
+        public IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int noteId)
         {
             return _database.TagNoteRelationship
                 .Include(rel => rel.Tag)
@@ -120,7 +166,7 @@ namespace Nerdable.NotesApi.Services.NoteService
                 .Where(rel => rel.NoteId == noteId);
         }
 
-        public IQueryable<TagNoteRelationship> GetTagNoteRelationship(int noteId, int tagid)
+        public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
         {
             return _database.TagNoteRelationship
                 .Include(rel => rel.Tag)

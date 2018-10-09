@@ -24,7 +24,11 @@ namespace Nerdable.NotesApi.Services.Automapper
 
         public AutomapperProfile()
         {
-            CreateMap<Users, UserDetail>();
+            CreateMap<Users, UserDetail>()
+                .ForMember(dest => dest.NotesCreated, opt => opt.MapFrom(users => users.Notes
+                    //.Select(n => )
+                ))
+                .ForMember(dest => dest.TagsCreated, opt => opt.MapFrom(users => users.Tags));
             CreateMap<UserDetail, Users>();
 
             CreateMap<Users, UserBaseModel>();
@@ -47,6 +51,12 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<NoteCreationModel, Notes>();
             CreateMap<Notes, NoteCreationModel>();
 
+            CreateMap<Notes, NoteBase>();
+            CreateMap<NoteBase, Notes>();
+
+            CreateMap<Notes, NoteSummary>();
+            CreateMap<NoteSummary, Notes>();
+
 
             CreateMap<Tags, TagSummary>();
             CreateMap<TagSummary, Tags>();
@@ -67,7 +77,8 @@ namespace Nerdable.NotesApi.Services.Automapper
                 .ForMember(dest => dest.CreatedByUserName, opt => opt.MapFrom(t => t.CreatedByUser.Username));
             CreateMap<TagDetail, Tags>();
 
-            CreateMap<TagNoteRelationship, TagSummary>();
+            CreateMap<TagNoteRelationship, TagSummary>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(rel => rel.Tag.Title));
             CreateMap<TagSummary, TagNoteRelationship>();
         }
     }
