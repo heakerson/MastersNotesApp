@@ -11,6 +11,8 @@ using Nerdable.NotesApi.Services.RelationshipService;
 using Nerdable.NotesApi.Services.TagService;
 using Nerdable.NotesApi.Services.UserService;
 using Swashbuckle.AspNetCore.Swagger;
+using Nerdable.NotesApi.Services.Automapper;
+using System;
 
 namespace Nerdable.NotesApi
 {
@@ -41,7 +43,11 @@ namespace Nerdable.NotesApi
             services.AddScoped<IRelationshipService, RelationshipService>();
 
             services.AddDbHelper<NotesAppContext>();
-            //services.AddScoped<IDatabaseService, DatabaseService>();
+
+            services.AddScoped(provider => new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new AutomapperProfile(provider.GetService<NotesAppContext>()));
+            }).CreateMapper());
 
             services.AddMvc();
         }

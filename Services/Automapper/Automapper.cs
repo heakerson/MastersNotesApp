@@ -8,26 +8,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nerdable.DbHelper.Services;
 
 namespace Nerdable.NotesApi.Services.Automapper
 {
     public class AutomapperProfile : Profile
     {
-        //private readonly IDatabaseService _databaseService;
-        //private readonly NotesAppContext _context;
-
-        //public AutomapperProfile(IDatabaseService databaseService, NotesAppContext context)
-        //{
-        //    _databaseService = databaseService;
-        //    _context = context;
-        //}
+        public NotesAppContext _dbContext { get; set; }
 
         public AutomapperProfile()
         {
+
+        }
+
+        public AutomapperProfile(NotesAppContext context)
+        {
+            _dbContext = context;
+
             CreateMap<Users, UserDetail>()
-                .ForMember(dest => dest.NotesCreated, opt => opt.MapFrom(users => users.Notes
-                    //.Select(n => )
-                ))
+                .ForMember(dest => dest.NotesCreated, opt => opt.MapFrom(users => users.Notes))
                 .ForMember(dest => dest.TagsCreated, opt => opt.MapFrom(users => users.Tags));
             CreateMap<UserDetail, Users>();
 
@@ -37,8 +36,6 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<Users, UserUpdateModel>();
             CreateMap<UserUpdateModel, Users>();
 
-
-
             CreateMap<Notes, NoteDetail>()
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(entity => 
                     entity.TagNoteRelationship
@@ -47,6 +44,7 @@ namespace Nerdable.NotesApi.Services.Automapper
 
             CreateMap<NoteUpdateModel, Notes>();
             CreateMap<Notes, NoteUpdateModel>();
+                //.ForMember(dest => dest.Tags, opt => opt.MapFrom(entity => entity.TagNoteRelationship.Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title })));
 
             CreateMap<NoteCreationModel, Notes>();
             CreateMap<Notes, NoteCreationModel>();
@@ -65,10 +63,7 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<TagCreationModel, Tags>();
 
             CreateMap<Tags, TagUpdateModel>();
-            CreateMap<TagUpdateModel, Tags>()
-                //.ForMember(tags => tags.CreatedByUser, opt => opt.MapFrom(update => 
-                    //_databaseService.GetObject<Users, UserBaseModel>(_context.Users, update.CreatedByUserId)))
-                ;
+            CreateMap<TagUpdateModel, Tags>();
 
             CreateMap<Tags, TagDetail>()
                 .ForMember(dest => dest.TagsToAlwaysInclude, opt => opt.MapFrom(t => t.TagNoteRelationship
@@ -79,7 +74,9 @@ namespace Nerdable.NotesApi.Services.Automapper
 
             CreateMap<TagNoteRelationship, TagSummary>()
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(rel => rel.Tag.Title));
-            CreateMap<TagSummary, TagNoteRelationship>();
+            CreateMap<TagSummary, TagNoteRelationship>()
+                .ForMember(tr => tr.TagId, opt => opt.MapFrom(ts => ts.TagId))
+                .ForMember(tr => tr.Tag, opt => opt.MapFrom(ts => _dbContext.Tags.Find(ts.TagId)));
         }
     }
 }

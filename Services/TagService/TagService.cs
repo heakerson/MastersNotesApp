@@ -29,6 +29,11 @@ namespace Nerdable.NotesApi.Services.TagService
                 .Where(t => t.TagId == tagId);
         }
 
+        public int GetHomelessTagId()
+        {
+            return _database.Tags.Where(t => t.Title == "HOMELESS NOTES").FirstOrDefault().TagId;
+        }
+
         public Response<Tags> UpdateSoftDelete(Tags entity)
         {
             entity.IsDeleted = true;

@@ -10,6 +10,6 @@ namespace Nerdable.NotesApi.Services.NoteService.Models
     {
         public int NoteId { get; set; }
         public int CreatedByUserId { get; set; }
-        public List<TagSummary> Tags { get; set; }
+        //public List<TagSummary> Tags { get; set; }
     }
 }

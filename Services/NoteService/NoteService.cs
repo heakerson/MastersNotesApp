@@ -8,6 +8,7 @@ using Nerdable.DbHelper.Services;
 using Nerdable.NotesApi.NotesAppEntities;
 using Nerdable.NotesApi.Services.NoteService.Models;
 using Nerdable.NotesApi.Services.RelationshipService;
+using Nerdable.NotesApi.Services.TagService;
 using Nerdable.NotesApi.Services.TagService.Models;
 
 namespace Nerdable.NotesApi.Services.NoteService
@@ -17,12 +18,14 @@ namespace Nerdable.NotesApi.Services.NoteService
         private readonly NotesAppContext _database;
         private readonly IDbHelper _dbHelper;
         private readonly IRelationshipService _relationshipService;
+        private readonly ITagService _tagService;
 
-        public NoteService(NotesAppContext database, IDbHelper dbHelper, IRelationshipService relationshipService)
+        public NoteService(NotesAppContext database, IDbHelper dbHelper, IRelationshipService relationshipService, ITagService tagService)
         {
             _database = database;
             _dbHelper = dbHelper;
             _relationshipService = relationshipService;
+            _tagService = tagService;
         }
 
         public Response<NoteDetail> RemoveTagNoteRelationship(int noteId, int tagId)
@@ -30,6 +33,8 @@ namespace Nerdable.NotesApi.Services.NoteService
             var tagNotQuery = GetTagNoteRelationshipQuery(noteId, tagId);
 
             var removeResponse = _dbHelper.RemoveEntitiesByQuery(tagNotQuery);
+
+            var updateHomelessResponse = UpdateHomelessTag(noteId);
 
             var noteResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
 
@@ -52,6 +57,7 @@ namespace Nerdable.NotesApi.Services.NoteService
 
             if (removeResponse.Success)
             {
+                var homelessUpdateResponse = UpdateHomelessTag(noteId);
                 return getDetailResponse;
             }
             else
@@ -68,6 +74,8 @@ namespace Nerdable.NotesApi.Services.NoteService
             {
                 var tagNoteResponse = _dbHelper.AddObject(relationshipResponse.Data);
 
+                var updateHomelessResponse = UpdateHomelessTag(noteId);
+
                 return tagNoteResponse;
             }
             else
@@ -80,14 +88,12 @@ namespace Nerdable.NotesApi.Services.NoteService
         {
             List<TagNoteRelationship> responseData = new List<TagNoteRelationship>();
 
-            bool errorOccurred = false;
-            bool successOccurred = false;
-            string message = "";
-
-
-
             if (tags.Any())
             {
+                bool errorOccurred = false;
+                bool successOccurred = false;
+                string message = "";
+
                 foreach (TagSummary tag in tags)
                 {
                     var addNewRelationshipResponse = AddTagNoteRelationship(noteId, tag.TagId);
@@ -111,6 +117,7 @@ namespace Nerdable.NotesApi.Services.NoteService
                     }
                 }
 
+                var homelessUpdateResponse = UpdateHomelessTag(noteId);
 
                 if (successOccurred && errorOccurred)
                 {
@@ -133,6 +140,7 @@ namespace Nerdable.NotesApi.Services.NoteService
 
         public Response<NoteDetail> UpdateTagRelationships(int noteId, List<TagSummary> Tags)
         {
+
             var removeTagsResponse = RemoveAllTagNoteRelationships(noteId);
 
             if (removeTagsResponse.Success)
@@ -141,12 +149,45 @@ namespace Nerdable.NotesApi.Services.NoteService
 
                 var detailResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
 
+                //var homelessUpdate = UpdateHomelessTag(noteId);
+
                 return Response<NoteDetail>.BuildResponse(detailResponse.Data, addTagsResponse.Success, addTagsResponse.ReturnCode, addTagsResponse.ReturnMessage);
             }
             else
             {
                 return removeTagsResponse;
             }
+        }
+
+        public Response<bool> UpdateHomelessTag(int noteId)
+        {
+            var query = GetAllTagNoteRelationshipsQuery(noteId);
+            var tagNoteResponse = _dbHelper.GetEntitiesByQuery(query);
+            int homelessTagId = _tagService.GetHomelessTagId();
+
+            if (tagNoteResponse.ReturnCode == ReturnCode.NoEntitiesMatchQuery)
+            {
+                //Adding the homeless tag if the note has no other tags
+                var homelessTagRelationshipCreate = _relationshipService.CreateNewTagNoteRelationship(noteId, homelessTagId);
+                var homelessTagRelationshipAdd = _dbHelper.AddObject(homelessTagRelationshipCreate.Data);
+
+                return Response<bool>.BuildResponse(true);
+            }
+            else
+            {
+                //Removing the homeless tag if there are other tags associated with the note
+                var homelessTagRelationship = tagNoteResponse.Data.Where(t => t.TagId == homelessTagId).FirstOrDefault();
+
+                if (homelessTagRelationship != null && tagNoteResponse.Data.Count() > 1)
+                {
+                    //atabase.Entry(homelessTagRelationship).State = EntityState.Detached;
+                    var removeResponse = _dbHelper.RemoveEntitiesByQuery(GetHomelessTagNoteQuery(noteId));
+                    return Response<bool>.BuildResponse(true);
+                }
+
+            }
+
+            return Response<bool>.BuildResponse(false);
         }
 
         public IQueryable<Notes> GetNoteQuery(int noteId)
@@ -168,10 +209,15 @@ namespace Nerdable.NotesApi.Services.NoteService
 
         public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
         {
-            return _database.TagNoteRelationship
-                .Include(rel => rel.Tag)
-                .Include(rel => rel.Note)
-                .Where(rel => rel.NoteId == noteId && rel.TagId == tagid);
+            return GetAllTagNoteRelationshipsQuery(noteId)
+                    .Where(rel => rel.TagId == tagid);
+        }
+
+        public IQueryable<TagNoteRelationship> GetHomelessTagNoteQuery(int noteId)
+        {
+            int homelessTagId = _tagService.GetHomelessTagId();
+
+            return GetTagNoteRelationshipQuery(noteId, homelessTagId);
         }
 
         public Response<Notes> UpdateSoftDelete(Notes entity)

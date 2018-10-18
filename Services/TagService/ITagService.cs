@@ -8,6 +8,8 @@ namespace Nerdable.NotesApi.Services.TagService
     public interface ITagService
     {
         IQueryable<Tags> GetTagQuery(int tagId);
+        int GetHomelessTagId();
+
         Response<Tags> UpdateSoftDelete(Tags entity);
     }
 }

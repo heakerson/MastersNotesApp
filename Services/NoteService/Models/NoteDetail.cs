@@ -8,7 +8,7 @@ namespace Nerdable.NotesApi.Services.NoteService.Models
     public class NoteDetail : NoteBase
     {
         public int NoteId { get; set; }
-        public UserDetail CreatedByUser { get; set; }
+        public int CreatedByUserId { get; set; }
         public ICollection<TagSummary> Tags { get; set; }
     }
 }
