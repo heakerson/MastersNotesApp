@@ -132,13 +132,18 @@ namespace Nerdable.NotesApi.Controllers
         [HttpGet("[controller]/{id}")]
         public IActionResult GetNote(int id)
         {
-            return ApiResult(_dbHelper.GetObjectByQuery<Notes,NoteDetail>(_noteService.GetNoteQuery(id)));
+            var query = _noteService.GetNoteQuery(id);
+            var noteResult = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(query);
+
+            return ApiResult(noteResult);
         }
 
         [HttpDelete("[controller]/HardDelete/{noteId}")]
         public IActionResult HardDeleteNote(int noteId)
         {
-            return ApiResult(_dbHelper.RemoveEntity<Notes>(noteId));
+            var removeResponse = _dbHelper.RemoveEntity<Notes>(noteId);
+
+            return ApiResult(removeResponse);
         }
 
         [HttpPost("[Controller]/SoftDelete/{noteId}")]
@@ -148,8 +153,10 @@ namespace Nerdable.NotesApi.Controllers
 
             if (response.Success)
             {
-                var detail = _dbHelper.GetObject<Notes, NoteDetail>(noteId);
-                return ApiResult(detail);
+                var query = _noteService.GetNoteQuery(noteId);
+                var noteDetailResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(query);
+
+                return ApiResult(noteDetailResponse);
             }
 
             return ApiResult(response);

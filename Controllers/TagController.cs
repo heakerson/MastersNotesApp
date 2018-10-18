@@ -52,9 +52,9 @@ namespace Nerdable.NotesApi.Controllers
         [HttpDelete("[Controller]/HardDelete/{tagId}")]
         public IActionResult HardDeleteTag(int tagId)
         {
-            var response = _databaseService.RemoveEntity<Tags>(tagId);
+            var removeResponse = _databaseService.RemoveEntity<Tags>(tagId);
 
-            return ApiResult(response);
+            return ApiResult(removeResponse);
         }
 
 

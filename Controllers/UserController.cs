@@ -51,17 +51,23 @@ namespace Nerdable.NotesApi.Controllers
         [HttpDelete("[Controller]/HardDelete/{userId}")]
         public IActionResult HardDeleteUser(int userId)
         {
-            var response = _dbHelper.RemoveEntity<Users>(userId);
+            var removeResponse = _dbHelper.RemoveEntity<Users>(userId);
 
-            return ApiResult(response);
+            return ApiResult(removeResponse);
         }
 
         [HttpPost("[Controller]/SoftDelete/{userId}")]
         public IActionResult SoftDeleteUser(int userId)
         {
-            var response = _dbHelper.UpdateObject<Users>(userId, _userService.UpdateSoftDelete);
+            var updateResponse = _dbHelper.UpdateObject<Users>(userId, _userService.UpdateSoftDelete);
 
-            return ApiResult(response);
+            if (updateResponse.Success)
+            {
+                var query = _userService.GetUserQuery(userId);
+                var userDetail = _dbHelper.GetObjectByQuery<Users, UserDetail>(query);
+            }
+
+            return ApiResult(updateResponse);
         }
     }
 }
