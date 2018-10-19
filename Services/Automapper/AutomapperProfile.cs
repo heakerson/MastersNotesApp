@@ -16,10 +16,7 @@ namespace Nerdable.NotesApi.Services.Automapper
     {
         public NotesAppContext _dbContext { get; set; }
 
-        public AutomapperProfile()
-        {
-
-        }
+        public AutomapperProfile(){ }
 
         public AutomapperProfile(NotesAppContext context)
         {
