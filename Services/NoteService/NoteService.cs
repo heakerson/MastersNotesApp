@@ -30,7 +30,7 @@ namespace Nerdable.NotesApi.Services.NoteService
 
         public Response<NoteDetail> RemoveTagNoteRelationship(int noteId, int tagId)
         {
-            var tagNotQuery = GetTagNoteRelationshipQuery(noteId, tagId);
+            var tagNotQuery = _relationshipService.GetTagNoteRelationshipQuery(noteId, tagId);
 
             var removeResponse = _dbHelper.RemoveEntitiesByQuery(tagNotQuery);
 
@@ -50,7 +50,7 @@ namespace Nerdable.NotesApi.Services.NoteService
 
         public Response<NoteDetail> RemoveAllTagNoteRelationships(int noteId)
         {
-            var query = GetAllTagNoteRelationshipsQuery(noteId);
+            var query = _relationshipService.GetAllTagNotesByNoteId_Query(noteId);
 
             var removeResponse = _dbHelper.RemoveEntitiesByQuery(query);
             var getDetailResponse = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(GetNoteQuery(noteId));
@@ -161,7 +161,7 @@ namespace Nerdable.NotesApi.Services.NoteService
 
         public Response<bool> UpdateHomelessTag(int noteId)
         {
-            var query = GetAllTagNoteRelationshipsQuery(noteId);
+            var query = _relationshipService.GetAllTagNotesByNoteId_Query(noteId);
             var tagNoteResponse = _dbHelper.GetEntitiesByQuery(query);
             int homelessTagId = _tagService.GetHomelessTagId();
 
@@ -199,25 +199,25 @@ namespace Nerdable.NotesApi.Services.NoteService
                 .Where(note => note.NoteId == noteId);
         }
 
-        public IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int noteId)
-        {
-            return _database.TagNoteRelationship
-                .Include(rel => rel.Tag)
-                .Include(rel => rel.Note)
-                .Where(rel => rel.NoteId == noteId);
-        }
+        //public IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int noteId)
+        //{
+        //    return _database.TagNoteRelationship
+        //        .Include(rel => rel.Tag)
+        //        .Include(rel => rel.Note)
+        //        .Where(rel => rel.NoteId == noteId);
+        //}
 
-        public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
-        {
-            return GetAllTagNoteRelationshipsQuery(noteId)
-                    .Where(rel => rel.TagId == tagid);
-        }
+        //public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
+        //{
+        //    return GetAllTagNoteRelationshipsQuery(noteId)
+        //            .Where(rel => rel.TagId == tagid);
+        //}
 
         public IQueryable<TagNoteRelationship> GetHomelessTagNoteQuery(int noteId)
         {
             int homelessTagId = _tagService.GetHomelessTagId();
 
-            return GetTagNoteRelationshipQuery(noteId, homelessTagId);
+            return _relationshipService.GetTagNoteRelationshipQuery(noteId, homelessTagId);
         }
 
         public Response<Notes> UpdateSoftDelete(Notes entity)

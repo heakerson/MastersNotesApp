@@ -20,6 +20,43 @@ namespace Nerdable.NotesApi.Services.RelationshipService
             _dbHelper = dbHelper;
         }
 
+        public IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery()
+        {
+            return _database.TagNoteRelationship
+                .Include(rel => rel.Tag)
+                .Include(rel => rel.Note)
+                    .ThenInclude(n => n.CreatedByUser);
+        }
+
+        public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                    .Where(rel => rel.TagId == tagid && rel.NoteId == noteId);
+        }
+
+        //public IQueryable<TagNoteRelationship> GetAllTagNotesByNoteIds_Query(List<int> noteIds)
+        //{
+        //    return GetAllTagNoteRelationshipsQuery()
+        //        .Where(rel => noteIds.Contains(rel.NoteId));
+        //}
+
+        //public IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(List<int> tagIds)
+        //{
+
+        //}
+
+        public IQueryable<TagNoteRelationship> GetAllTagNotesByNoteId_Query(int noteId)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                .Where(rel => rel.NoteId == noteId);
+        }
+
+        public IQueryable<TagNoteRelationship> GetAllTagNotesByTagId_Query(int tagId)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                .Where(rel => rel.TagId == tagId);
+        }
+
         public Response<TagNoteRelationship> CreateNewTagNoteRelationship(int noteId, int tagId)
         {
             var noteResponse = _dbHelper.GetEntity<Notes>(noteId);

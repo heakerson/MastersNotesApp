@@ -74,6 +74,12 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<TagSummary, TagNoteRelationship>()
                 .ForMember(tr => tr.TagId, opt => opt.MapFrom(ts => ts.TagId))
                 .ForMember(tr => tr.Tag, opt => opt.MapFrom(ts => _dbContext.Tags.Find(ts.TagId)));
+
+            CreateMap<TagNoteRelationship, NoteDetail>()
+                //.ForMember(destinationMember => destinationMember, opt => opt.MapFrom(tn => tn.Note))
+                .ForAllMembers(opt => opt.MapFrom(tn => tn.Note))
+                ;
+            CreateMap<NoteDetail, TagNoteRelationship>();
         }
     }
 }

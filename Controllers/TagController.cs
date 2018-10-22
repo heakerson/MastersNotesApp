@@ -38,6 +38,15 @@ namespace Nerdable.NotesApi.Controllers
             return ApiResult(updateResponse);
         }
 
+        [HttpGet("[Controller]/All")]
+        public IActionResult GetAllTags()
+        {
+            IQueryable<Tags> query = _tagService.GetAllTagsQuery();
+            var response = _databaseService.GetObjectsByQuery<Tags, TagSummary>(query);
+
+            return ApiResult(response);
+        }
+
 
         [HttpGet("[Controller]/{tagId}")]
         public IActionResult GetTag(int tagId)

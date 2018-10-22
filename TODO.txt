@@ -10,10 +10,7 @@ LEFT OFF:
 TODO:
 ============================================================
 = Add implementation details to nuget package
-= Use nuget package in api
 = Update document in teams
-= Make sure to add/remove homeless tag as needed and test it (updateNote, addTag, removeTag)
-	- Check responses for the above and try adding/removing non existent tags AND tags that are already related to the note
 = Add actions to add update the TagAlwaysIncludeRelationhip and viewing them
 = I need validate the incoming models before calling my services 
  

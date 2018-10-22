@@ -22,10 +22,15 @@ namespace Nerdable.NotesApi.Services.TagService
             _userService = userService;
         }
 
-        public IQueryable<Tags> GetTagQuery(int tagId)
+        public IQueryable<Tags> GetAllTagsQuery()
         {
             return _database.Tags
-                .Include(t => t.CreatedByUser)
+                .Include(t => t.CreatedByUser);
+        }
+
+        public IQueryable<Tags> GetTagQuery(int tagId)
+        {
+            return GetAllTagsQuery()
                 .Where(t => t.TagId == tagId);
         }
 

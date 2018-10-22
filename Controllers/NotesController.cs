@@ -22,12 +22,14 @@ namespace Nerdable.NotesApi.Controllers
         private readonly IDbHelper _dbHelper;
         private readonly INoteService _noteService;
         private readonly ITagService _tagService;
+        private readonly IRelationshipService _relationshipService;
 
-        public NotesController(IDbHelper dbHelper, INoteService noteService, ITagService tagService)
+        public NotesController(IDbHelper dbHelper, INoteService noteService, ITagService tagService, IRelationshipService relationshipService)
         {
             _dbHelper = dbHelper;
             _noteService = noteService;
             _tagService = tagService;
+            _relationshipService = relationshipService;
         }
 
         [HttpPost("[controller]/Create")]
@@ -95,7 +97,7 @@ namespace Nerdable.NotesApi.Controllers
             if (removeResponse.Success)
             {
                 var note = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(_noteService.GetNoteQuery(noteId));
-                var tagNoteRelationshipsResponse = _dbHelper.GetObjectsByQuery<TagNoteRelationship, TagSummary>(_noteService.GetAllTagNoteRelationshipsQuery(noteId));
+                var tagNoteRelationshipsResponse = _dbHelper.GetObjectsByQuery<TagNoteRelationship, TagSummary>(_relationshipService.GetAllTagNotesByNoteId_Query(noteId));
 
                 if (tagNoteRelationshipsResponse.Success)
                 {
@@ -116,7 +118,7 @@ namespace Nerdable.NotesApi.Controllers
             if (createResponse.Success)
             {
                 var note = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(_noteService.GetNoteQuery(noteId));
-                var tagNoteRelationshipsResponse = _dbHelper.GetObjectsByQuery<TagNoteRelationship, TagSummary>(_noteService.GetAllTagNoteRelationshipsQuery(noteId));
+                var tagNoteRelationshipsResponse = _dbHelper.GetObjectsByQuery<TagNoteRelationship, TagSummary>(_relationshipService.GetAllTagNotesByNoteId_Query(noteId));
 
                 if (tagNoteRelationshipsResponse.Success)
                 {
@@ -136,6 +138,26 @@ namespace Nerdable.NotesApi.Controllers
             var noteResult = _dbHelper.GetObjectByQuery<Notes, NoteDetail>(query);
 
             return ApiResult(noteResult);
+        }
+
+        [HttpPost("[controller]/ByTagIds")]
+        public IActionResult GetAllNotesForGivenTag([FromBody]int tagId)
+        {
+            IQueryable<TagNoteRelationship> tagNoteRelationshipsQuery = _relationshipService.GetAllTagNotesByTagId_Query(tagId);
+
+            var relationships = _dbHelper.GetEntitiesByQuery(tagNoteRelationshipsQuery);
+
+            if (relationships.Success)
+            {
+                var notes = relationships.Data
+                    .Select(tr => tr.Note).ToList();
+
+                var noteDetails = _dbHelper.MapToNewObjects<Notes,NoteDetail>(notes);
+
+                return ApiResult(noteDetails);
+            }
+
+            return ApiResult(relationships);
         }
 
         [HttpDelete("[controller]/HardDelete/{noteId}")]
