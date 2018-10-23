@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nerdable.NotesApi.NotesAppEntities;
 using Nerdable.NotesApi.Services.TagService;
 using Nerdable.NotesApi.Services.TagService.Models;
+using Nerdable.NotesApi.Services.Search;
 
 namespace Nerdable.NotesApi.Controllers
 {
@@ -53,6 +54,15 @@ namespace Nerdable.NotesApi.Controllers
         {
             IQueryable<Tags> query = _tagService.GetTagQuery(tagId);
             var response = _databaseService.GetObjectByQuery<Tags, TagDetail>(query);
+
+            return ApiResult(response);
+        }
+
+        [HttpPost("[Controller]/Search")]
+        public IActionResult SearchByTitle([FromBody]SearchBase search)
+        {
+            IQueryable<Tags> query = _tagService.GetTagsBySearch_Query(search.SearchTerm);
+            var response = _databaseService.GetObjectsByQuery<Tags, TagSummary>(query);
 
             return ApiResult(response);
         }

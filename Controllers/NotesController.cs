@@ -35,10 +35,7 @@ namespace Nerdable.NotesApi.Controllers
         [HttpPost("[controller]/Create")]
         public IActionResult CreateNote([FromBody]NoteCreationModel model)
         {
-            if (model.LastUpdated == null)
-            {
-                model.LastUpdated = DateTime.Now;
-            }
+            model.LastUpdated = DateTime.Now;
 
             var noteCreateResponse = _dbHelper.AddObject<NoteCreationModel, Notes>(model);
 

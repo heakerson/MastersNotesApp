@@ -9,6 +9,7 @@ namespace Nerdable.NotesApi.Services.TagService
     {
         IQueryable<Tags> GetTagQuery(int tagId);
         IQueryable<Tags> GetAllTagsQuery();
+        IQueryable<Tags> GetTagsBySearch_Query(string searchTerm);
         //IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int tagId);
         int GetHomelessTagId();
 

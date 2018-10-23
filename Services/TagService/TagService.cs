@@ -34,6 +34,12 @@ namespace Nerdable.NotesApi.Services.TagService
                 .Where(t => t.TagId == tagId);
         }
 
+        public IQueryable<Tags> GetTagsBySearch_Query(string searchTerm)
+        {
+            return GetAllTagsQuery()
+                .Where(t => t.Title.ToLower().Contains(searchTerm.ToLower()) && t.TagId != GetHomelessTagId());
+        }
+
         public int GetHomelessTagId()
         {
             return _database.Tags.Where(t => t.Title == "HOMELESS NOTES").FirstOrDefault().TagId;
