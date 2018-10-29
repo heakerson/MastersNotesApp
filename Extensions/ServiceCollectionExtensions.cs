@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nerdable.NotesApi.NotesAppEntities;
 using Nerdable.NotesApi.Services.Automapper;
+using Nerdable.NotesApi.Services.DirectoryService;
 using Nerdable.NotesApi.Services.NoteService;
 using Nerdable.NotesApi.Services.RelationshipService;
 using Nerdable.NotesApi.Services.TagService;
@@ -24,6 +25,7 @@ namespace Nerdable.NotesApi.Extensions
             services.AddScoped<ITagService, TagService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRelationshipService, RelationshipService>();
+            services.AddScoped<IDirectoryService, DirectoryService>();
 
             return services;
         }

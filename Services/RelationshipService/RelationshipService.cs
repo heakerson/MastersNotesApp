@@ -2,10 +2,8 @@
 using Nerdable.DbHelper.Models.Response;
 using Nerdable.DbHelper.Services;
 using Nerdable.NotesApi.NotesAppEntities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Nerdable.NotesApi.Services.RelationshipService
 {
@@ -34,16 +32,6 @@ namespace Nerdable.NotesApi.Services.RelationshipService
                     .Where(rel => rel.TagId == tagid && rel.NoteId == noteId);
         }
 
-        //public IQueryable<TagNoteRelationship> GetAllTagNotesByNoteIds_Query(List<int> noteIds)
-        //{
-        //    return GetAllTagNoteRelationshipsQuery()
-        //        .Where(rel => noteIds.Contains(rel.NoteId));
-        //}
-
-        //public IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(List<int> tagIds)
-        //{
-
-        //}
 
         public IQueryable<TagNoteRelationship> GetAllTagNotesByNoteId_Query(int noteId)
         {
@@ -51,10 +39,28 @@ namespace Nerdable.NotesApi.Services.RelationshipService
                 .Where(rel => rel.NoteId == noteId);
         }
 
+        public IQueryable<TagNoteRelationship> GetAllTagNotesByNoteIds_Query(List<int> noteIds)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                .Where(tr => noteIds.Contains(tr.NoteId));
+        }
+
         public IQueryable<TagNoteRelationship> GetAllTagNotesByTagId_Query(int tagId)
         {
             return GetAllTagNoteRelationshipsQuery()
                 .Where(rel => rel.TagId == tagId);
+        }
+
+        public IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(List<int> tagIds)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                .Where(tr => tagIds.Contains(tr.TagId));
+        }
+
+        public IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(IQueryable<int> tagIds)
+        {
+            return GetAllTagNoteRelationshipsQuery()
+                .Where(tr => tagIds.Contains(tr.TagId));
         }
 
         public Response<TagNoteRelationship> CreateNewTagNoteRelationship(int noteId, int tagId)

@@ -16,7 +16,6 @@ namespace Nerdable.NotesApi.NotesAppEntities
         }
 
         public virtual DbSet<Notes> Notes { get; set; }
-        public virtual DbSet<TagAlwaysIncludeRelationship> TagAlwaysIncludeRelationship { get; set; }
         public virtual DbSet<TagNoteRelationship> TagNoteRelationship { get; set; }
         public virtual DbSet<Tags> Tags { get; set; }
         public virtual DbSet<Users> Users { get; set; }
@@ -45,23 +44,6 @@ namespace Nerdable.NotesApi.NotesAppEntities
                     .HasForeignKey(d => d.CreatedByUserId);
             });
 
-            modelBuilder.Entity<TagAlwaysIncludeRelationship>(entity =>
-            {
-                entity.HasKey(e => new { e.AlwaysIncludeTagId, e.ChildTagId });
-
-                entity.HasOne(d => d.AlwaysIncludeTag)
-                    .WithMany(p => p.TagAlwaysIncludeRelationshipAlwaysIncludeTag)
-                    .HasForeignKey(d => d.AlwaysIncludeTagId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TagAlwaysIncludesRelationship_Tags");
-
-                entity.HasOne(d => d.ChildTag)
-                    .WithMany(p => p.TagAlwaysIncludeRelationshipChildTag)
-                    .HasForeignKey(d => d.ChildTagId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TagAlwaysIncludesRelationship_Tags_Child");
-            });
-
             modelBuilder.Entity<TagNoteRelationship>(entity =>
             {
                 entity.HasKey(e => new { e.TagId, e.NoteId });
@@ -86,6 +68,10 @@ namespace Nerdable.NotesApi.NotesAppEntities
                 entity.HasOne(d => d.CreatedByUser)
                     .WithMany(p => p.Tags)
                     .HasForeignKey(d => d.CreatedByUserId);
+
+                entity.HasOne(d => d.Parent)
+                    .WithMany(p => p.InverseParent)
+                    .HasForeignKey(d => d.ParentId);
             });
 
             modelBuilder.Entity<Users>(entity =>

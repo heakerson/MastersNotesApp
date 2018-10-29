@@ -13,9 +13,10 @@ namespace Nerdable.NotesApi.Services.RelationshipService
 
         IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagId);
         IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery();
-        //IQueryable<TagNoteRelationship> GetAllTagNotesByNoteIds_Query(List<int> noteIds);
-        //IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(List<int> tagIds);
         IQueryable<TagNoteRelationship> GetAllTagNotesByNoteId_Query(int noteId);
+        IQueryable<TagNoteRelationship> GetAllTagNotesByNoteIds_Query(List<int> noteIds);
         IQueryable<TagNoteRelationship> GetAllTagNotesByTagId_Query(int tagId);
+        IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(List<int> tagId);
+        IQueryable<TagNoteRelationship> GetAllTagNotesByTagIds_Query(IQueryable<int> tagId);
     }
 }

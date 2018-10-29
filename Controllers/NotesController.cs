@@ -11,6 +11,7 @@ using Nerdable.NotesApi.NotesAppEntities;
 using Nerdable.NotesApi.Services.NoteService;
 using Nerdable.NotesApi.Services.NoteService.Models;
 using Nerdable.NotesApi.Services.RelationshipService;
+using Nerdable.NotesApi.Services.Search;
 using Nerdable.NotesApi.Services.TagService;
 using Nerdable.NotesApi.Services.TagService.Models;
 
@@ -137,25 +138,35 @@ namespace Nerdable.NotesApi.Controllers
             return ApiResult(noteResult);
         }
 
-        [HttpPost("[controller]/ByTagIds")]
-        public IActionResult GetAllNotesForGivenTag([FromBody]int tagId)
+
+        [HttpPost("[controller]/Search")]
+        public IActionResult GetAllNotesBySearchObject([FromBody]NoteSearch search)
         {
-            IQueryable<TagNoteRelationship> tagNoteRelationshipsQuery = _relationshipService.GetAllTagNotesByTagId_Query(tagId);
+            IQueryable<Notes> query;
 
-            var relationships = _dbHelper.GetEntitiesByQuery(tagNoteRelationshipsQuery);
-
-            if (relationships.Success)
+            if (search.DirectoryId != 0 && !search.DirectFilterIds.Any())
             {
-                var notes = relationships.Data
-                    .Select(tr => tr.Note).ToList();
-
-                var noteDetails = _dbHelper.MapToNewObjects<Notes,NoteDetail>(notes);
-
-                return ApiResult(noteDetails);
+                query = _noteService.GetAllNotesUnderDirectory_Query(search.DirectoryId);
+            }
+            else if (search.DirectoryId != 0 && search.DirectFilterIds.Any())
+            {
+                query = _noteService.GetAllNotesUnderDirectory_TagFilter_Query(search.DirectoryId, search.DirectFilterIds);
+            }
+            else if (search.DirectoryId == 0 && search.DirectFilterIds.Any())
+            {
+                query = _noteService.GetAllNotes_TagFilter_Query(search.DirectFilterIds);
+            }
+            else
+            {
+                return BadRequest(search);
             }
 
-            return ApiResult(relationships);
+            var notesResponse = _dbHelper.GetObjectsByQuery<Notes, NoteSummary>(query);
+
+            return ApiResult(notesResponse);
+
         }
+
 
         [HttpDelete("[controller]/HardDelete/{noteId}")]
         public IActionResult HardDeleteNote(int noteId)

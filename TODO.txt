@@ -2,7 +2,30 @@
 
 LEFT OFF:
 ===========================================================
-
+- Test GetAllNotesUnderDirectory in NoteService and add another call to add a list of tag filters
+	for searching
+- I need a way to search directories and filter by tags
+	- Do I want to get ALL notes within a directory? Or just the immediate notes and the immediate
+		directories?? I think I should get ALL notes AND the immediate directories
+- I need to keep track of selected tags and display them at the top of page under the
+	selected directory (if one is selected)
+	- I need a way to deselect the directory to none
+- There should be a button to add a new directory or note to the selected folder
+	- If there's nothing in it, just have a small message that says 'No contents'
+- When creating a note, use the currently selected directory and let it be editable by having an edit button and open up an explorer window (modal?)
+- Do I want to display a message when there are no notes/directories for the current
+	selection?
+- Update the notes view
+- Fix that when I close an expanded section of the explorer, it doesn't save the open/close state of the child directories
+- Add ability to add/remove tags from single note view
+- Add ability to create a enw directory (probably in the explorer?)
+	- Maybe create a separate component that ONLY has the directory-selection section (call it directory-selector?) and put that inside the explorer?
+- Add ability to move or copy note to new directory
+- Add ability to move directory
+- Add ability to remove directory - including messaging about if if has any child directories
+- Add icons to signify if th selected thing is a tag, note, or directory
+- Add search bar to explorer
+	- can search only tags, directories, or both with use of checkboxes 
 
 
 

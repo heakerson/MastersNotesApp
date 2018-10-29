@@ -9,6 +9,5 @@ namespace Nerdable.NotesApi.Services.TagService.Models
     public class TagDetail : TagUpdateModel
     {
         public string CreatedByUserName { get; set; }
-        public ICollection<TagSummary> TagsToAlwaysInclude { get; set; }
     }
 }

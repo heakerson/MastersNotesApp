@@ -7,8 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Nerdable.DbHelper.Services;
+using Nerdable.NotesApi.Services.DirectoryService.Models;
 
 namespace Nerdable.NotesApi.Services.Automapper
 {
@@ -36,7 +35,12 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<Notes, NoteDetail>()
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(entity => 
                     entity.TagNoteRelationship
-                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title})));
+                    .Where(r => string.IsNullOrEmpty(r.Tag.ParentTitle))
+                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title})))
+                .ForMember(dest => dest.Directories, opt => opt.MapFrom(entity =>
+                    entity.TagNoteRelationship
+                    .Where(r => !string.IsNullOrEmpty(r.Tag.ParentTitle))
+                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title })));
             CreateMap<NoteDetail, Notes>();
 
             CreateMap<NoteUpdateModel, Notes>();
@@ -53,8 +57,13 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<NoteSummary, Notes>();
 
 
+            CreateMap<Tags, Tags>();
+
             CreateMap<Tags, TagSummary>();
             CreateMap<TagSummary, Tags>();
+
+            CreateMap<Tags, DirectorySummary>();
+            CreateMap<DirectorySummary, Tags>();
 
             CreateMap<Tags, TagCreationModel>();
             CreateMap<TagCreationModel, Tags>();
@@ -63,11 +72,22 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<TagUpdateModel, Tags>();
 
             CreateMap<Tags, TagDetail>()
-                .ForMember(dest => dest.TagsToAlwaysInclude, opt => opt.MapFrom(t => t.TagNoteRelationship
-                    .Select(tr => tr.Tag))
-                )
+                //.ForMember(dest => dest.ParentTags, opt => opt.MapFrom(t => _dbContext.TagAlwaysIncludeRelationship
+                //    .Where(tr => tr.ChildTagId == t.TagId)
+                //    .Select(tr => tr.AlwaysIncludeTag)
+                //    ))
+                //.ForMember(dest => dest.ChildTags, opt => opt.MapFrom(t => _dbContext.TagAlwaysIncludeRelationship
+                //    .Where(tr => tr.AlwaysIncludeTagId == t.TagId)
+                //    .Select(rel => rel.ChildTag)))
                 .ForMember(dest => dest.CreatedByUserName, opt => opt.MapFrom(t => t.CreatedByUser.Username));
             CreateMap<TagDetail, Tags>();
+
+            CreateMap<Tags, DirectoryDetail>()
+                .ForMember(dest => dest.CreatedByUserName, opt => opt.MapFrom(t => t.CreatedByUser.Username))
+                .ForMember(dest => dest.ParentIds, opt => opt.MapFrom(t => MapPathIds(t.PathWithIds)))
+                ;
+            CreateMap<DirectoryDetail, Tags>();
+
 
             CreateMap<TagNoteRelationship, TagSummary>()
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(rel => rel.Tag.Title));
@@ -80,6 +100,22 @@ namespace Nerdable.NotesApi.Services.Automapper
                 .ForAllMembers(opt => opt.MapFrom(tn => tn.Note))
                 ;
             CreateMap<NoteDetail, TagNoteRelationship>();
+        }
+
+
+        public List<int> MapPathIds(string path)
+        {
+            List<int> Ids = new List<int>();
+            var stringList = path.Split("/", StringSplitOptions.RemoveEmptyEntries);
+
+            foreach(string idString in stringList)
+            {
+                int id = int.Parse(idString);
+
+                Ids.Add(id);
+            }
+
+            return Ids;
         }
     }
 }

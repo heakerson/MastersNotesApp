@@ -7,8 +7,7 @@ namespace Nerdable.NotesApi.NotesAppEntities
     {
         public Tags()
         {
-            TagAlwaysIncludeRelationshipAlwaysIncludeTag = new HashSet<TagAlwaysIncludeRelationship>();
-            TagAlwaysIncludeRelationshipChildTag = new HashSet<TagAlwaysIncludeRelationship>();
+            InverseParent = new HashSet<Tags>();
             TagNoteRelationship = new HashSet<TagNoteRelationship>();
         }
 
@@ -17,10 +16,14 @@ namespace Nerdable.NotesApi.NotesAppEntities
         public string Description { get; set; }
         public int? CreatedByUserId { get; set; }
         public bool IsDeleted { get; set; }
+        public string PathWithTitles { get; set; }
+        public string PathWithIds { get; set; }
+        public int? ParentId { get; set; }
+        public string ParentTitle { get; set; }
 
         public Users CreatedByUser { get; set; }
-        public ICollection<TagAlwaysIncludeRelationship> TagAlwaysIncludeRelationshipAlwaysIncludeTag { get; set; }
-        public ICollection<TagAlwaysIncludeRelationship> TagAlwaysIncludeRelationshipChildTag { get; set; }
+        public Tags Parent { get; set; }
+        public ICollection<Tags> InverseParent { get; set; }
         public ICollection<TagNoteRelationship> TagNoteRelationship { get; set; }
     }
 }

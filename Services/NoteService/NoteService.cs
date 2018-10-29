@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Nerdable.DbHelper.Models.Response;
 using Nerdable.DbHelper.Services;
 using Nerdable.NotesApi.NotesAppEntities;
+using Nerdable.NotesApi.Services.DirectoryService;
 using Nerdable.NotesApi.Services.NoteService.Models;
 using Nerdable.NotesApi.Services.RelationshipService;
 using Nerdable.NotesApi.Services.TagService;
@@ -19,13 +20,15 @@ namespace Nerdable.NotesApi.Services.NoteService
         private readonly IDbHelper _dbHelper;
         private readonly IRelationshipService _relationshipService;
         private readonly ITagService _tagService;
+        private readonly IDirectoryService _directoryService;
 
-        public NoteService(NotesAppContext database, IDbHelper dbHelper, IRelationshipService relationshipService, ITagService tagService)
+        public NoteService(NotesAppContext database, IDbHelper dbHelper, IRelationshipService relationshipService, ITagService tagService, IDirectoryService directoryService)
         {
             _database = database;
             _dbHelper = dbHelper;
             _relationshipService = relationshipService;
             _tagService = tagService;
+            _directoryService = directoryService;
         }
 
         public Response<NoteDetail> RemoveTagNoteRelationship(int noteId, int tagId)
@@ -190,34 +193,122 @@ namespace Nerdable.NotesApi.Services.NoteService
             return Response<bool>.BuildResponse(false);
         }
 
-        public IQueryable<Notes> GetNoteQuery(int noteId)
+        public IQueryable<Notes> GetAllNotes()
         {
             return _database.Notes
                 .Include(note => note.TagNoteRelationship)
                     .ThenInclude(tnr => tnr.Tag)
-                .Include(note => note.CreatedByUser)
+                .Include(note => note.CreatedByUser);
+        }
+
+        public IQueryable<Notes> GetNoteQuery(int noteId)
+        {
+            return GetAllNotes()
                 .Where(note => note.NoteId == noteId);
         }
 
-        //public IQueryable<TagNoteRelationship> GetAllTagNoteRelationshipsQuery(int noteId)
-        //{
-        //    return _database.TagNoteRelationship
-        //        .Include(rel => rel.Tag)
-        //        .Include(rel => rel.Note)
-        //        .Where(rel => rel.NoteId == noteId);
-        //}
 
-        //public IQueryable<TagNoteRelationship> GetTagNoteRelationshipQuery(int noteId, int tagid)
-        //{
-        //    return GetAllTagNoteRelationshipsQuery(noteId)
-        //            .Where(rel => rel.TagId == tagid);
-        //}
 
         public IQueryable<TagNoteRelationship> GetHomelessTagNoteQuery(int noteId)
         {
             int homelessTagId = _tagService.GetHomelessTagId();
 
             return _relationshipService.GetTagNoteRelationshipQuery(noteId, homelessTagId);
+        }
+
+        public IQueryable<Notes> GetAllNotes_TagFilter_Query(List<int> tagFilter)
+        {
+            var relationships = _relationshipService.GetAllTagNotesByTagIds_Query(tagFilter);
+
+            var testRelation = relationships.ToList();
+
+            return FilterRelationships_MustHaveAllTagIds(relationships, tagFilter);
+
+
+            //return _relationshipService.GetAllTagNotesByTagIds_Query(tagFilter)
+            //    .GroupBy(tr => tr.NoteId)
+            //    .Select(g => new NoteGrouping_SelectTags
+            //    {
+            //        NoteId = g.Key,
+            //        Note = g.Select(tr => tr.Note).FirstOrDefault(),
+            //        TagIds = g.Select(tr => tr.TagId)
+            //    })
+            //    .Where(ng => ng.TagIds.Intersect(tagFilter).Equals(tagFilter))
+            //    .Select(g => g.Note);
+        }
+
+        public IQueryable<Notes> FilterNotes_TagFilter_Query(List<int> noteIds, List<int> tagIds)
+        {
+            var relationships = _relationshipService.GetAllTagNotesByNoteIds_Query(noteIds);
+
+            return FilterRelationships_MustHaveAllTagIds(relationships, tagIds);
+
+            ////return _relationshipService.GetAllTagNotesByNoteIds_Query(noteIds)
+            ////    .GroupBy(tr => tr.NoteId)
+            ////    .Select(g => new NoteGrouping_SelectTags
+            ////    {
+            ////        NoteId = g.Key,
+            ////        Note = g.Select(tr => tr.Note).FirstOrDefault(),
+            ////        TagIds = g.Select(tr => tr.TagId)
+            ////    })
+            ////    .Where(ng => ng.TagIds.Intersect(tagIds).Equals(tagIds))
+            ////    .Select(g => g.Note);
+        }
+
+        public IQueryable<Notes> FilterRelationships_MustHaveAllTagIds(IQueryable<TagNoteRelationship> relationships, List<int> tagFilters)
+        {
+            return relationships
+                .GroupBy(tr => tr.NoteId)
+                .Select(g => new NoteGrouping_SelectTags
+                {
+                    NoteId = g.Key,
+                    Note = g.Select(tr => tr.Note).FirstOrDefault(),
+                    TagIds = g.Select(tr => tr.TagId)
+                })
+                .Where(ng => ParentContainsChild(ng.TagIds, tagFilters))
+                .Select(g => g.Note);
+        }
+
+        private bool ParentContainsChild(IEnumerable<int> parent, IEnumerable<int> child)
+        {
+            foreach (int id in child)
+            {
+                if (!parent.Contains(id))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+            var intersection = parent.ToList().Intersect(child.ToList()).ToList();
+            var equals = intersection.Equals(child);
+
+            return equals;
+        }
+
+        public IQueryable<Notes> GetAllNotesUnderDirectory_TagFilter_Query(int directoryId, List<int> tagFilter)
+        {
+            var noteIdsUnderDirectory = GetAllNotesUnderDirectory_Query(directoryId)
+                .Select(n => n.NoteId)
+                .ToList();
+
+            return FilterNotes_TagFilter_Query(noteIdsUnderDirectory, tagFilter);
+        }
+
+        public IQueryable<Notes> GetAllNotesUnderDirectory_Query(int directoryId)
+        {
+            var childDirectoryIds = _directoryService.GetAllChildDirectoriesQuery(directoryId)
+                .Select(d => d.TagId);
+
+            return _relationshipService.GetAllTagNoteRelationshipsQuery()
+                .Where(tr => childDirectoryIds.Contains(tr.TagId) || tr.TagId == directoryId)
+                //.Select(tr => tr.Note)
+                .GroupBy(g => g.NoteId)
+                .Select(g => g.Select(tr => tr.Note).FirstOrDefault());
+
+            return _relationshipService.GetAllTagNoteRelationshipsQuery()
+                .Where(tr => childDirectoryIds.Contains(tr.TagId) || tr.TagId == directoryId)
+                .Select(tr => tr.Note);
         }
 
         public Response<Notes> UpdateSoftDelete(Notes entity)
