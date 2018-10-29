@@ -33,14 +33,14 @@ namespace Nerdable.NotesApi.Services.Automapper
             CreateMap<UserUpdateModel, Users>();
 
             CreateMap<Notes, NoteDetail>()
-                .ForMember(dest => dest.Tags, opt => opt.MapFrom(entity => 
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(entity =>
                     entity.TagNoteRelationship
-                    .Where(r => string.IsNullOrEmpty(r.Tag.ParentTitle))
-                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title})))
+                    .Where(r => string.IsNullOrEmpty(r.Tag.PathWithTitles))
+                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title })))
                 .ForMember(dest => dest.Directories, opt => opt.MapFrom(entity =>
                     entity.TagNoteRelationship
-                    .Where(r => !string.IsNullOrEmpty(r.Tag.ParentTitle))
-                    .Select(relationship => new TagSummary { TagId = relationship.TagId, Title = relationship.Tag.Title })));
+                    .Where(r => !string.IsNullOrEmpty(r.Tag.PathWithTitles))
+                    .Select(relationship => relationship.Tag)));
             CreateMap<NoteDetail, Notes>();
 
             CreateMap<NoteUpdateModel, Notes>();

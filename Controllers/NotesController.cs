@@ -163,6 +163,11 @@ namespace Nerdable.NotesApi.Controllers
 
             var notesResponse = _dbHelper.GetObjectsByQuery<Notes, NoteSummary>(query);
 
+            if (notesResponse.ReturnCode == ReturnCode.NoEntitiesMatchQuery)
+            {
+                notesResponse.ReturnCode = ReturnCode.Success;
+            }
+
             return ApiResult(notesResponse);
 
         }

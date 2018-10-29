@@ -2,14 +2,12 @@
 
 LEFT OFF:
 ===========================================================
-- Test GetAllNotesUnderDirectory in NoteService and add another call to add a list of tag filters
-	for searching
-- I need a way to search directories and filter by tags
-	- Do I want to get ALL notes within a directory? Or just the immediate notes and the immediate
-		directories?? I think I should get ALL notes AND the immediate directories
+- Add the ability to remove the directoryID from the search
+	- make sure the add "Make selection" string back if the search object is empty
 - I need to keep track of selected tags and display them at the top of page under the
 	selected directory (if one is selected)
 	- I need a way to deselect the directory to none
+	- I need to make sure I'm not adding the same tag to the search list in the UI
 - There should be a button to add a new directory or note to the selected folder
 	- If there's nothing in it, just have a small message that says 'No contents'
 - When creating a note, use the currently selected directory and let it be editable by having an edit button and open up an explorer window (modal?)
